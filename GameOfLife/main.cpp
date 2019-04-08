@@ -7,9 +7,9 @@ constexpr int HEIGHT = 480;
 int main(int argn, char **argv)
 {
 	GameOfLife gameOfLife(WIDTH, HEIGHT);
+
+	gameOfLife.Loop();
+
 	std::cout << "Hello World\n";
-
-	system("pause");
-
 	return 0;
 }

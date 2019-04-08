@@ -41,7 +41,7 @@ void GameOfLife::Loop()
 		}
 	}
 
-
+	clean_resources();
 }
 
 void GameOfLife::init_allegro()
@@ -51,6 +51,9 @@ void GameOfLife::init_allegro()
 
 	// Init Keyboard system
 	check_init(al_install_keyboard(), "keyboard");
+
+	// Init font addon
+	check_init(al_init_font_addon(), "font addon");
 
 	// Init Event queue
 	queue = al_create_event_queue();
@@ -64,6 +67,10 @@ void GameOfLife::init_allegro()
 	display = al_create_display(_width, _height);
 	check_init(display, "display");
 
+	// Create font
+	font = al_create_builtin_font();
+	check_init(font, "font");
+
 	// Register keyboard, display, timer events
 	al_register_event_source(queue, al_get_keyboard_event_source());
 	al_register_event_source(queue, al_get_display_event_source(display));
@@ -76,6 +83,16 @@ void GameOfLife::check_init(bool condition, const std::string &msg)
 
 	printf("Error on %s init\n", msg);
 	exit(-1);
+}
+
+void GameOfLife::clean_resources()
+{
+
+	al_destroy_font(font);
+	al_destroy_display(display);
+	al_destroy_timer(timer);
+	al_destroy_event_queue(queue);
+
 }
 
 GameOfLife::~GameOfLife()

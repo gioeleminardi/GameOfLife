@@ -19,11 +19,13 @@ public:
 private:
 	void check_init(bool condition, const std::string &msg);
 	void init_allegro();
+	void clean_resources();
 
 private:
 	ALLEGRO_DISPLAY *display;
 	ALLEGRO_EVENT_QUEUE* queue;
 	ALLEGRO_TIMER* timer;
+	ALLEGRO_FONT* font;
 	
 	int _width;
 	int _height;
