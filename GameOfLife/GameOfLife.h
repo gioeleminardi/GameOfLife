@@ -29,8 +29,11 @@ private:
 	void init_allegro();
 	void clean_resources();
 	void set_window_title();
-
 	void init_grid();
+	void draw_grid(int *grid);
+	void apply_rules();
+	int check_neighbours(int *grid, int row, int col);
+	void swap_grid();
 
 	void debug_grid(int *grid);
 

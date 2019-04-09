@@ -1,10 +1,10 @@
 #include "GameOfLife.h"
-#include <random>;
+#include <random>
 
 GameOfLife::GameOfLife(int width, int height, int cell_size): _width(width), _height(height), _cell_size(cell_size)
 {
-	_rows = std::round(width / cell_size);
-	_cols = std::round(height / cell_size);
+	_cols = std::round(width / cell_size);
+	_rows = std::round(height / cell_size);
 
 	_grid = new int[_rows * _cols];
 	check_init(_grid, "grid");
@@ -13,7 +13,6 @@ GameOfLife::GameOfLife(int width, int height, int cell_size): _width(width), _he
 	check_init(_next_grid, "next_grid");
 
 	init_grid();
-	debug_grid(_grid);
 
 	init_allegro();
 }
@@ -34,6 +33,8 @@ void GameOfLife::Loop()
 		switch (event.type)
 		{
 		case ALLEGRO_EVENT_TIMER:
+			apply_rules();
+			
 			redraw = true;
 			break;
 		case ALLEGRO_EVENT_KEY_DOWN:
@@ -49,6 +50,10 @@ void GameOfLife::Loop()
 
 		if (redraw && al_is_event_queue_empty(queue))
 		{
+			al_clear_to_color(al_map_rgb(0, 0, 0));
+
+			draw_grid(_next_grid);
+			swap_grid();
 
 			al_flip_display();
 		}
@@ -128,7 +133,6 @@ void GameOfLife::init_grid()
 	std::default_random_engine e1(r());
 	std::uniform_int_distribution<int> uniform_dist(0, 1);
 
-
 	int grid_offset = 0;
 	for (int row = 0; row < _rows; ++row)
 	{
@@ -138,7 +142,6 @@ void GameOfLife::init_grid()
 			_grid[grid_offset] = uniform_dist(e1);
 		}
 	}
-
 }
 
 void GameOfLife::debug_grid(int * grid)
@@ -157,6 +160,88 @@ void GameOfLife::debug_grid(int * grid)
 	}
 }
 
+void GameOfLife::draw_grid(int *grid)
+{
+	int grid_offset = 0;
+	int x1, y1, x2, y2;
+	for (int row = 0; row < _rows; ++row)
+	{
+		for (int col = 0; col < _cols; ++col)
+		{
+			grid_offset = row * _cols + col;
+			
+			if (grid[grid_offset] == 1)
+			{
+				x1 = col * _cell_size;
+				y1 = row * _cell_size;
+
+				x2 = x1 + _cell_size - 1;
+				y2 = y1 + _cell_size - 1;
+
+				DrawRect(x1, y1, x2, y2, al_map_rgb(255, 255, 255));
+			}
+		}
+	}
+}
+
+void GameOfLife::apply_rules()
+{
+	int grid_offset = 0;
+	int sum;
+	for (int row = 0; row < _rows; ++row)
+	{
+		for (int col = 0; col < _cols; ++col)
+		{
+			grid_offset = row * _cols + col;
+			sum = check_neighbours(_grid, row, col);
+
+			if (sum < 2 || sum > 3)
+				_next_grid[grid_offset] = 0;
+			else if (sum == 3)
+				_next_grid[grid_offset] = 1;
+			else
+				_next_grid[grid_offset] = _grid[grid_offset];
+		}
+	}
+}
+
+int GameOfLife::check_neighbours(int * grid, int row, int col)
+{
+	int sum = 0;
+	int new_row = 0, new_col = 0;
+	int grid_offset = 0, cell_offset = row * _cols + col;
+
+	for (int i = -1; i < 2; ++i)
+	{
+		for (int j = -1; j < 2; ++j)
+		{
+			new_col = col + j;
+			new_row = row + i;
+
+			new_col = (new_col + _cols) % _cols;
+			new_row = (new_row + _rows) % _rows;
+
+			grid_offset = new_row * _cols + new_col;
+			
+			if(grid_offset != cell_offset)
+				sum += grid[grid_offset];
+
+		}
+	}
+
+	return sum;
+}
+
+void GameOfLife::swap_grid()
+{
+	int *temp = _grid;
+	_grid = _next_grid;
+	_next_grid = temp;
+
+	std::memset(_next_grid, 0, _cols * _rows * sizeof(int));
+}
+
 GameOfLife::~GameOfLife()
 {
+
 }
